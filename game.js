@@ -65,7 +65,7 @@ function init(){
     ctx = $("#gameCanvas")[0].getContext("2d");  
     $('body').css('margin', '0');  //No margins
     $('body').css('overflow', 'hidden'); //Hide scrollbars
-    $('body').css('backgroundImage', 'radial-gradient(#512B00, #3D2000, #231200)');
+    $('body').css('backgroundImage', 'radial-gradient(#333, #222, #111)');
     ctx.canvas.width  = $(window).width();
     ctx.canvas.height = $(window).height();	
     characterImage.src = PATH_CHARACTER;
@@ -98,7 +98,7 @@ function loop(){
     ctx.textAlign = "left";
     ctx.fillText(score, COUNTER_X, COUNTER_Y);
     ctx.textAlign = "center";
-    ctx.fillStyle = "#3D2000";
+    ctx.fillStyle = "#222";
     ctx.fillText(("level"), LEVEL_X, LEVEL_Y);
     ctx.font = "bold 120px sans-serif";
     
