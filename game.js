@@ -39,7 +39,7 @@ var isMovingWest = false;
 var hitSound = new sound("sound/hit.wav", false);
 var backgroundSound = new sound("sound/frogs3.mp3", true);
 var backgroundSoundStarted = false;
-var enemyAmount = 5;
+var enemyAmount = 10;
 var enemiesLeft;
 var playerHealth = 6;
 var shootingEnabled = true;
@@ -676,13 +676,13 @@ function collisionDetection(x1, y1, w1, h1, x2, y2, w2, h2){
   //w1, h1 = width and height of rectangle 1
   //x2, y2 = x and y coordinates of rectangle 2
   //w2, h2 = width and height of rectangle 2
-  /*
+  
   ctx.beginPath();
   ctx.strokeStyle = 'red';
   ctx.rect(x1,y1,w1,h1);
   ctx.rect(x2,y2,w2,h2);
   ctx.stroke();
-  */
+  
   if (x1 <= x2+w2 && x2 <= x1+w1 && y1 <= y2+h2 && y2 <= y1+h1)
   {
 	return true;
