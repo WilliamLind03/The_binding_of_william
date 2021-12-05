@@ -2,7 +2,7 @@
 
 const TIME_PER_FRAME = 17;   //this means 30 fps 
 
-const GAME_FONT = "bold 40px sans-serif";
+const GAME_FONT = "bold 20px sans-serif";
 const GAME_FONT_COLOR = "white";
 const GAME_BACKGROUND_COLOR = "#512B00"; 
 

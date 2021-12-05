@@ -96,17 +96,26 @@ function loop(){
     ctx.fillStyle = GAME_FONT_COLOR;
     
     ctx.textAlign = "left";
-    ctx.fillText(score, COUNTER_X, COUNTER_Y);
+    ctx.fillText("Damage: " + damage, COUNTER_X, COUNTER_Y);
+    ctx.fillText("Firerate: " + (shootingDelay/1000) + "s", COUNTER_X, COUNTER_Y + 30);
+    ctx.fillText("Range: " + shootingRange, COUNTER_X, COUNTER_Y + 60);
+    ctx.fillText("Speed: " + (Math.round(playerSpeed * 100)/100), COUNTER_X, COUNTER_Y + 90);
+    ctx.fillText("Kills: " + score, COUNTER_X, COUNTER_Y + 120);
+    ctx.fillText(("Move: wasd"), 20, ctx.canvas.height - 40);
+    ctx.fillText(("Shoot: arrows"), 20, ctx.canvas.height - 20);
     ctx.textAlign = "center";
     ctx.fillStyle = "#222";
+    ctx.font = "bold 50px sans-serif";
     ctx.fillText(("level"), LEVEL_X, LEVEL_Y);
     ctx.font = "bold 120px sans-serif";
+
     
-    if (level % BOSS_SPAWN_LVL != 0){
-        ctx.fillText(level, LEVEL_X, LEVEL_Y + 110);
+    ctx.fillText(level, LEVEL_X, LEVEL_Y + 110);
         
-    } else if (level % BOSS_SPAWN_LVL == 0) {
-        ctx.fillText("BOSS", LEVEL_X, LEVEL_Y + 110);
+    if (level % BOSS_SPAWN_LVL == 0) {
+        ctx.fillStyle = "red";
+        ctx.font = "bold 80px sans-serif";
+        ctx.fillText("BOSS", (ctx.canvas.width/2), 80);
         drawBoss();
         bossMovement();
     }
@@ -510,12 +519,14 @@ function bossCollision(){
     }
     
     if(bossHealth <= 0){
+        clearInterval(bossAttack1Interval);
         bossHealth = 0;
         if(bossSpeed > 0){
             bossSpeed -= 1;
             bossBatPosY += 3;
         }
         if (bossSpeed <= 0 && bossHealth <= 0){
+            bossSpeed = 0;
             if(bossKilled){
                 console.log("reset");
                 var reset = setTimeout(resetBoss, 2000);
@@ -575,7 +586,6 @@ function resetBoss(){
     bossHealth = bossMaxHealth
     bossBatPosX = BOSS_BAT_X;
     bossBatPosY = BOSS_BAT_Y;
-    clearInterval(bossAttack1Interval);
     attack1Started = false;
     if(currentBossStage < 3){
         currentBossStage++;
