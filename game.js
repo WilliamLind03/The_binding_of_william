@@ -22,13 +22,13 @@ var boosterArray = [];
 var bulletArray = [];
 var enemyArray = [];
 var heartArray = [];
-// Game values                ___
-var enemyAmount = 10;//      (o_o)
-var playerHealth = 6;//        |
-var damage = 1;//             /|\
-var score = 0;//            _/ | \_
-var level = 1;//              / \
-// Positions                 /   \
+// Game values                 ___
+var enemyAmount = 10; //      (o_o)
+var playerHealth = 6; //        |
+var damage = 1; //             /|\
+var score = 0; //            _/ | \_
+var level = 1; //              / \
+// Positions                 _/   \_
 var currentScreenX = SCREEN_CHARACTER_X;
 var currentScreenY = SCREEN_CHARACTER_Y;
 var bossBatPosX = BOSS_BAT_X;
@@ -680,19 +680,14 @@ function keyDownHandler(event){
     
     
     // Pauses game
-    if (event.keyCode == ESC){
-        if (gamePaused){
-            gameloop = setInterval(loop, TIME_PER_FRAME);
-            gamePaused = false;
-        } else if(gamePaused == false && (isGameover == false)){
-            clearInterval(gameloop);
-            clearInterval(bossAttack1Interval);
-            attack1Started = false;
-            ctx.fillStyle = "white";
-            ctx.fillText("GAME PAUSED", ctx.canvas.width / 2, (ctx.canvas.height / 2) - 100);
-            gamePaused = true;
-            
+    if (event.keyCode == ESC || event.keyCode == SPACE){
+        if(gamePaused == false && (isGameover == false)){
+            pauseGame();
         }
+        else if (gamePaused){
+            resumeGame();
+        } 
+        
     }
 }
 
@@ -709,6 +704,23 @@ function keyUpHandler(event){
     if(event.keyCode == D){
         isMovingEast = false;
     }
+}
+
+function pauseGame(){
+    clearInterval(gameloop);
+    clearInterval(bossAttack1Interval);
+    attack1Started = false;
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.globalAlpha = 1.0;
+    ctx.fillStyle = "white";
+    ctx.fillText("GAME PAUSED", ctx.canvas.width / 2, (ctx.canvas.height / 2) - 100);
+    gamePaused = true;
+}
+function resumeGame(){
+    gameloop = setInterval(loop, TIME_PER_FRAME);
+    gamePaused = false;
 }
 
 //Check for collisions - Returns true if the rectangles collides, otherwise false
@@ -840,6 +852,10 @@ function gameover(){
     // Stops game loop
     clearInterval(gameloop);
     isGameover = true;
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
+    ctx.globalAlpha = 1.0;
     ctx.textAlign = "center";
     ctx.fillStyle = "red";
     ctx.font = "bold 200px sans-serif";
