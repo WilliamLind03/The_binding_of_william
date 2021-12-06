@@ -715,7 +715,22 @@ function pauseGame(){
     ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);
     ctx.globalAlpha = 1.0;
     ctx.fillStyle = "white";
+    ctx.font = "bold 100px sans-serif";
     ctx.fillText("GAME PAUSED", ctx.canvas.width / 2, (ctx.canvas.height / 2) - 100);
+    
+    ctx.drawImage(boostFiringspeed, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) + 300, ctx.canvas.height - 230, 100, 100);
+    ctx.drawImage(boostDamage, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) + 100, ctx.canvas.height - 230, 100, 100);
+    ctx.drawImage(boostSpeed, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) - 100, ctx.canvas.height - 230, 100, 100);
+    ctx.drawImage(boostRange, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) - 300, ctx.canvas.height - 230, 100, 100);
+    
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    
+    ctx.fillText("+Firerate", (ctx.canvas.width / 2) + 300, ctx.canvas.height - 100);
+    ctx.fillText("+Damage", (ctx.canvas.width / 2) + 100, ctx.canvas.height - 100);
+    ctx.fillText("+Speed", (ctx.canvas.width / 2) - 100, ctx.canvas.height - 100);
+    ctx.fillText("+Range", (ctx.canvas.width / 2) - 300, ctx.canvas.height - 100);
+    
     gamePaused = true;
 }
 function resumeGame(){
