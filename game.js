@@ -59,6 +59,7 @@ var bossBulletArray = [];
 var bossBulletAmount = BOSS_BULLET_AMOUNT;
 var attack1Started = false;
 var bossAttack1Interval;
+var isGameover = false;
 
 function init(){
     enemiesLeft = enemyAmount;
@@ -139,12 +140,7 @@ function loop(){
     drawBossAttack1()
     enemyCollision();
     drawHearts();
-    
-    
 
-    
-    
-    
     if(playerHealth == 0){
         gameover();
     }
@@ -658,10 +654,22 @@ function keyDownHandler(event){
         shoot(WEST);
     }
     
-    if (event.keyCode == ESC && gamePaused == false){
-        clearInterval(gameloop);
-        pausedGame = setInterval(pausedGameloop, TIME_PER_FRAME);
-        gamePaused = true;
+    if (event.keyCode == SPACE && isGameover) 
+    {
+        document.location.reload(true);
+    }
+    
+    if (event.keyCode == ESC){
+        if (gamePaused){
+            gameloop = setInterval(loop, TIME_PER_FRAME);
+            gamePaused = false;
+        } else if(gamePaused == false && (isGameover == false)){
+            clearInterval(gameloop);
+            ctx.fillStyle = "white";
+            ctx.fillText("GAME PAUSED", ctx.canvas.width / 2, (ctx.canvas.height / 2) - 100);
+            gamePaused = true;
+            
+        }
     }
 }
 
@@ -805,22 +813,15 @@ function boosterCollision(){
     
 }
 
-function pausedGameloop(){
-    /*
-    if (event.keyCode == ESC && gamePaused == true){
-        gameloop = setInterval(gameloop, TIME_PER_FRAME);
-        clearInterval(pausedGame);
-        gamePaused = false;
-    }
-    */
-    
-    console.log("Game is paused!");
- }  
-
 function gameover(){
     clearInterval(gameloop);
+    isGameover = true;
     ctx.textAlign = "center";
     ctx.fillStyle = "red";
     ctx.font = "bold 200px sans-serif";
     ctx.fillText("GAME OVER", (ctx.canvas.width / 2), (ctx.canvas.height / 2) - 100);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.font = "bold 40px sans-serif";
+    ctx.fillText("PRESS SPACE TO PLAY AGAIN", (ctx.canvas.width / 2), (ctx.canvas.height / 2) + 200);
 }

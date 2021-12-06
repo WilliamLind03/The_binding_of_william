@@ -30,8 +30,8 @@ const PATH_BOOST_DAMAGE = "img/boost_damage.png";
 
 const BOOSTER_WIDTH = 48;
 const BOOSTER_HEIGHT = 48;
-const BOOSTER_MAGNETFORCE = 5;
-const BOOSTER_MAGNETFORCE_RANGE = 200;
+const BOOSTER_MAGNETFORCE = 10;
+const BOOSTER_MAGNETFORCE_RANGE = 100;
 
 const HEART_WIDTH = 40;
 const HEART_FIRST_POS_X = window.innerWidth - 350;
@@ -100,6 +100,7 @@ const D = 68;
 const S = 83;
 const A = 65;
 
+const SPACE = 32;
 const ESC = 27;
 
 const ARROW_UP = 38;
