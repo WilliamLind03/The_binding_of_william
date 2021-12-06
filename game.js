@@ -1,65 +1,76 @@
 "use strict";
+
 $(document).ready(init);
-var ctx, counter, gameloop, pausedGame, diagonalSpeed, bossAnimation, bossMovementInterval, damageDelay; 
-var characterImage = new Image();
-var enemyImage = new Image();
-var enemyArray = [];
-var bulletImage = new Image();
-var bulletArray = [];
-var heartArray = [];
-var heartImage = new Image();
-var bossBatImage = new Image();
-var bossDeadImage = new Image();
-var bossBulletImage = new Image();
-var boostSpeed = new Image();
+
+var ctx, counter, gameloop, pausedGame, diagonalSpeed, bossAnimation, bossMovementInterval, damageDelay, enemiesLeft, bossAttack1Interval; 
+// Images
 var boostFiringspeed = new Image();
-var boostRange = new Image();
+var bossBulletImage = new Image();
+var characterImage = new Image();
+var bossDeadImage = new Image();
+var bossBatImage = new Image();
 var boostDamage = new Image();
+var bulletImage = new Image();
+var heartImage = new Image();
+var boostSpeed = new Image();
+var boostRange = new Image();
+var enemyImage = new Image();
+// Lists
+var bossStages = [PATH_BOSS_STAGE_1, PATH_BOSS_STAGE_2, PATH_BOSS_STAGE_3, PATH_BOSS_STAGE_4];
+var bossBulletArray = [];
 var boosterArray = [];
-var score = 0;
-var level = 1;
+var bulletArray = [];
+var enemyArray = [];
+var heartArray = [];
+// Game values                ___
+var enemyAmount = 10;//      (o_o)
+var playerHealth = 6;//        |
+var damage = 1;//             /|\
+var score = 0;//            _/ | \_
+var level = 1;//              / \
+// Positions                 /   \
+var currentScreenX = SCREEN_CHARACTER_X;
+var currentScreenY = SCREEN_CHARACTER_Y;
+var bossBatPosX = BOSS_BAT_X;
+var bossBatPosY = BOSS_BAT_Y;
+// Spritesheet positions
 var currentSpriteX = SPRITE_START_X;
 var currentSpriteY = SPRITE_START_EAST_Y;
 var currentEnemyX = SPRITE_START_X;
 var currentEnemyY = SPRITE_START_EAST_Y;
 var bossBatSpriteX = 0;
-var facing = SOUTH;
-var enemyFacing = SOUTH;
-var currentScreenX = SCREEN_CHARACTER_X;
-var currentScreenY = SCREEN_CHARACTER_Y;
-var bossBatPosX = BOSS_BAT_X;
-var bossBatPosY = BOSS_BAT_Y;
-var bossSpeed = BOSS_BAT_SPEED;
-var goRight = true;
-var isMoving = false;
+// Booleans 
+var backgroundSoundStarted = false;
+var shootingEnabled = true;
+var attack1Started = false;
 var isMovingNorth = false;
 var isMovingSouth = false;
 var isMovingEast = false;
 var isMovingWest = false;
-var hitSound = new sound("sound/hit.wav", false);
-var backgroundSound = new sound("sound/frogs3.mp3", true);
-var backgroundSoundStarted = false;
-var enemyAmount = 10;
-var enemiesLeft;
-var playerHealth = 6;
-var shootingEnabled = true;
-var gamePaused = false;
 var canTakeDamage = true;
-var bossHealth = BOSS_HEALTH;
-var bossMaxHealth = BOSS_HEALTH;
-var bulletSpeed = BULLET_SPEED;
+var gamePaused = false;
+var isGameover = false;
 var bossKilled = true;
+var isMoving = false;
+var goRight = true;
+// Sounds
+var backgroundSound = new sound("sound/frogs3.mp3", true);
+var hitSound = new sound("sound/hit.wav", false);
+
+var bossBulletAmount = BOSS_BULLET_AMOUNT;
 var playerSpeed = SCREEN_CHARACTER_SPEED;
 var shootingDelay = SHOOTING_DELAY;
 var shootingRange = SHOOTING_RANGE;
-var damage = 1;
-var bossStages = [PATH_BOSS_STAGE_1, PATH_BOSS_STAGE_2, PATH_BOSS_STAGE_3, PATH_BOSS_STAGE_4];
+var bossMaxHealth = BOSS_HEALTH;
+var bossSpeed = BOSS_BAT_SPEED;
+var bulletSpeed = BULLET_SPEED;
+var bossHealth = BOSS_HEALTH;
 var currentBossStage = 0;
-var bossBulletArray = [];
-var bossBulletAmount = BOSS_BULLET_AMOUNT;
-var attack1Started = false;
-var bossAttack1Interval;
-var isGameover = false;
+var enemyFacing = SOUTH;
+var facing = SOUTH;
+
+
+
 
 function init(){
     enemiesLeft = enemyAmount;
@@ -146,6 +157,7 @@ function loop(){
     }
 }
 
+// Player rendering/movement
 function drawCharacter(){
     if (isMovingNorth || isMovingEast || isMovingSouth || isMovingWest) 
     {
@@ -322,45 +334,6 @@ function enemyCollision(){
     }
 }
 
-function shoot(direction){
-    if(shootingEnabled){
-        var newBullet = new Object();
-        newBullet.x = currentScreenX + (CHARACTER_WIDTH / 2) - (BULLET_WIDTH / 2);
-        newBullet.y = currentScreenY + (CHARACTER_HEIGHT / 2) + (BULLET_HEIGHT / 2);
-        newBullet.startX = newBullet.x;
-        newBullet.startY = newBullet.y;
-        newBullet.direction = direction;
-        if (isMovingNorth || isMovingEast || isMovingSouth || isMovingWest){
-            if (isMovingNorth){
-                newBullet.directionSpeed = NORTH;
-            }
-            else if (isMovingEast){
-                newBullet.directionSpeed = EAST;
-            }
-            else if (isMovingSouth){
-                newBullet.directionSpeed = SOUTH;
-            }
-            else if (isMovingWest){
-                newBullet.directionSpeed = WEST;
-            }
-
-        }
-        bulletArray.push(newBullet);
-        shootingEnabled = false;
-        var shootingInterval = setTimeout(shootingDelayFunc, shootingDelay);
-    }
-    
-}
-
-function bulletRangeFunc(i){
-    // Removes bullet after given range
-    if(bulletArray[i]){
-        if((Math.abs(bulletArray[i].startX - bulletArray[i].x) > shootingRange) || (Math.abs(bulletArray[i].startY - bulletArray[i].y) > shootingRange)){
-            bulletArray.splice(i, 1);
-        }
-    }
-}
-
 // Draw bullet and enemy collision
 function drawBullet(){
     for(var i = bulletArray.length - 1; i >= 0; i--)
@@ -415,6 +388,45 @@ function drawBullet(){
     }
 }
 
+function shoot(direction){
+    if(shootingEnabled){
+        var newBullet = new Object();
+        newBullet.x = currentScreenX + (CHARACTER_WIDTH / 2) - (BULLET_WIDTH / 2);
+        newBullet.y = currentScreenY + (CHARACTER_HEIGHT / 2) + (BULLET_HEIGHT / 2);
+        newBullet.startX = newBullet.x;
+        newBullet.startY = newBullet.y;
+        newBullet.direction = direction;
+        if (isMovingNorth || isMovingEast || isMovingSouth || isMovingWest){
+            if (isMovingNorth){
+                newBullet.directionSpeed = NORTH;
+            }
+            else if (isMovingEast){
+                newBullet.directionSpeed = EAST;
+            }
+            else if (isMovingSouth){
+                newBullet.directionSpeed = SOUTH;
+            }
+            else if (isMovingWest){
+                newBullet.directionSpeed = WEST;
+            }
+
+        }
+        bulletArray.push(newBullet);
+        shootingEnabled = false;
+        var shootingInterval = setTimeout(shootingDelayFunc, shootingDelay);
+    }
+    
+}
+
+function bulletRangeFunc(i){
+    // Removes bullet after given range
+    if(bulletArray[i]){
+        if((Math.abs(bulletArray[i].startX - bulletArray[i].x) > shootingRange) || (Math.abs(bulletArray[i].startY - bulletArray[i].y) > shootingRange)){
+            bulletArray.splice(i, 1);
+        }
+    }
+}
+
 function nextLevel(){
     level++;
     if(level % 5 == 0){
@@ -435,20 +447,21 @@ function takeDamage(){
         
 }
 
-
 function takeDamageDelay(){
     canTakeDamage = true;
 }
 
 // Draws boss
 function drawBoss(){
+    
     bossHealthbar();
     bossCollision();
+    
+    // Attack interval
     if(attack1Started == false){
         bossAttack1Interval = setInterval(bossAttack1, 1200 - (300 * currentBossStage));
         attack1Started = true;
     }
-    
 
     // Draws boss alive
     if(bossHealth > 0){
@@ -488,8 +501,7 @@ function bossMovement(){
         goRight = true;
         bossBatPosY = currentScreenY - (BOSS_BAT_HEIGHT/2) + (CHARACTER_HEIGHT/2); // Gives boss same Y-value as player
     }
-    
-    // Goes faster the lower the health is
+    // Goes faster the lower the health
     if(bossHealth > 0){
         bossSpeed = BOSS_BAT_SPEED * (2 - (bossHealth/bossMaxHealth));
     }
@@ -514,14 +526,16 @@ function bossCollision(){
         }
     }
     
+    // Checks if boss is dead
     if(bossHealth <= 0){
         clearInterval(bossAttack1Interval);
         bossHealth = 0;
+        // Slows boss down
         if(bossSpeed > 0){
             bossSpeed -= 1;
             bossBatPosY += 3;
         }
-        if (bossSpeed <= 0 && bossHealth <= 0){
+        else if (bossSpeed <= 0){
             bossSpeed = 0;
             if(bossKilled){
                 console.log("reset");
@@ -536,7 +550,7 @@ function bossCollision(){
 }
 
 function bossAttack1(){
-    // Create bullets
+    // Creates bullets
     for(var i = 0; i < bossBulletAmount; i++){
         var bossBullet = new Object();
         var randInt = Math.random() * 360;
@@ -547,8 +561,11 @@ function bossAttack1(){
         bossBulletArray.push(bossBullet)
     }
 }
+
 function drawBossAttack1(){
+    
     bossAttack1Collision();
+    
     for(var i = bossBulletArray.length - 1; i >= 0; i--){
         console.log(bossBulletArray[i].speed);
         bossBulletArray[i].x += bossBulletArray[i].speedX;
@@ -565,6 +582,7 @@ function drawBossAttack1(){
 }
 
 function bossAttack1Collision(){
+    // Checks collision with player
     for(var i = bossBulletArray.length - 1; i >= 0; i--){
         if(bossBulletArray[i]){
             if(collisionDetection(bossBulletArray[i].x, bossBulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT, currentScreenX + HITBOX_PLAYER_X, currentScreenY + HITBOX_PLAYER_Y, CHARACTER_WIDTH - HITBOX_PLAYER_WIDTH, CHARACTER_HEIGHT - HITBOX_PLAYER_HEIGHT)){
@@ -575,6 +593,7 @@ function bossAttack1Collision(){
     }
 }
 
+// Resets boss values
 function resetBoss(){
     nextLevel();
     bossSpeed = BOSS_BAT_SPEED + (level / BOSS_SPAWN_LVL);
@@ -659,12 +678,16 @@ function keyDownHandler(event){
         document.location.reload(true);
     }
     
+    
+    // Pauses game
     if (event.keyCode == ESC){
         if (gamePaused){
             gameloop = setInterval(loop, TIME_PER_FRAME);
             gamePaused = false;
         } else if(gamePaused == false && (isGameover == false)){
             clearInterval(gameloop);
+            clearInterval(bossAttack1Interval);
+            attack1Started = false;
             ctx.fillStyle = "white";
             ctx.fillText("GAME PAUSED", ctx.canvas.width / 2, (ctx.canvas.height / 2) - 100);
             gamePaused = true;
@@ -814,6 +837,7 @@ function boosterCollision(){
 }
 
 function gameover(){
+    // Stops game loop
     clearInterval(gameloop);
     isGameover = true;
     ctx.textAlign = "center";
