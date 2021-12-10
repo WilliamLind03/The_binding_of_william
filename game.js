@@ -30,15 +30,15 @@ var damage = 1; //             /|\
 var score = 0; //            _/ | \_
 var level = 1; //              / \
 // Positions                 _/   \_
-var currentScreenX = SCREEN_CHARACTER_X;
-var currentScreenY = SCREEN_CHARACTER_Y;
-var bossBatPosX = BOSS_BAT_X;
-var bossBatPosY = currentScreenY;
+var playerScreenX = SCREEN_CHARACTER_X;
+var playerScreenY = SCREEN_CHARACTER_Y;
+var bossBatPosX;
+var bossBatPosY;
 // Spritesheet positions
-var currentSpriteX = SPRITE_START_X;
-var currentSpriteY = SPRITE_START_EAST_Y;
-var currentEnemyX = SPRITE_START_X;
-var currentEnemyY = SPRITE_START_EAST_Y;
+var playerSpriteX = SPRITE_START_X;
+var playerSpriteY = SPRITE_START_EAST_Y;
+var enemySpriteX = SPRITE_START_X;
+var enemySpriteY = SPRITE_START_EAST_Y;
 var bossBatSpriteX = 0;
 // Booleans 
 var backgroundSoundStarted = false;
@@ -50,6 +50,7 @@ var isMovingSouth = false;
 var isMovingEast = false;
 var isMovingWest = false;
 var canTakeDamage = true;
+var showHitboxes = false;
 var gamePaused = false;
 var isGameover = false;
 var bossKilled = true;
@@ -72,9 +73,11 @@ var enemyFacing = SOUTH;
 var facing = SOUTH;
 var heartX;
 var heartY;
-var buttonPressed = false;
 var pickedUpSpeed, pickedUpFiringspeed, pickedUpDamage, pickedUpRange;
-var boostTextPosY = currentScreenY;
+var boostTextPosY = playerScreenY;
+//Player variables
+var playerWidth = CHARACTER_WIDTH * 1;
+var playerHeight = CHARACTER_HEIGHT * 1;
 
 
 function init(){
@@ -162,15 +165,15 @@ function loop(){
         bossMovement();
     }
     
-    if (currentScreenX < 0){
-        currentScreenX = 0;
-    } else if (currentScreenX > (ctx.canvas.width - 72)){
-        currentScreenX = (ctx.canvas.width - 72);
+    if (playerScreenX < 0){
+        playerScreenX = 0;
+    } else if (playerScreenX > (ctx.canvas.width - 72)){
+        playerScreenX = (ctx.canvas.width - 72);
     }
-    if (currentScreenY < 0){
-        currentScreenY = 0;
-    } else if (currentScreenY > ctx.canvas.height - 96){
-        currentScreenY = ctx.canvas.height - 96;
+    if (playerScreenY < 0){
+        playerScreenY = 0;
+    } else if (playerScreenY > ctx.canvas.height - 96){
+        playerScreenY = ctx.canvas.height - 96;
     }
     
     drawBooster();
@@ -193,76 +196,76 @@ function drawCharacter(){
     if (isMovingNorth || isMovingEast || isMovingSouth || isMovingWest) 
     {
         if (facing == NORTH){           
-            currentSpriteY = SPRITE_START_NORTH_Y;
+            playerSpriteY = SPRITE_START_NORTH_Y;
         }
         if (facing == EAST){
-            currentSpriteY = SPRITE_START_EAST_Y;
+            playerSpriteY = SPRITE_START_EAST_Y;
         }
         if (facing == SOUTH){
-            currentSpriteY = SPRITE_START_SOUTH_Y;
+            playerSpriteY = SPRITE_START_SOUTH_Y;
         }
         if (facing == WEST){
-            currentSpriteY = SPRITE_START_WEST_Y;
+            playerSpriteY = SPRITE_START_WEST_Y;
         }
         
         if(isMovingNorth && isMovingEast){
             diagonalSpeed = playerSpeed * Math.sin(45);
-            currentScreenY -= diagonalSpeed;
-            currentScreenX += diagonalSpeed;
-            currentSpriteY = SPRITE_START_EAST_Y;
+            playerScreenY -= diagonalSpeed;
+            playerScreenX += diagonalSpeed;
+            playerSpriteY = SPRITE_START_EAST_Y;
         }
         else if(isMovingNorth && isMovingWest){
             diagonalSpeed = playerSpeed * Math.sin(45);
-            currentScreenY -= diagonalSpeed;
-            currentScreenX -= diagonalSpeed;
-            currentSpriteY = SPRITE_START_WEST_Y;
+            playerScreenY -= diagonalSpeed;
+            playerScreenX -= diagonalSpeed;
+            playerSpriteY = SPRITE_START_WEST_Y;
         }
         else if(isMovingSouth && isMovingEast){
             diagonalSpeed = playerSpeed * Math.sin(45);
-            currentScreenY += diagonalSpeed;
-            currentScreenX += diagonalSpeed;
-            currentSpriteY = SPRITE_START_EAST_Y;
+            playerScreenY += diagonalSpeed;
+            playerScreenX += diagonalSpeed;
+            playerSpriteY = SPRITE_START_EAST_Y;
         }
         else if(isMovingSouth && isMovingWest){
             diagonalSpeed = playerSpeed * Math.sin(45);
-            currentScreenY += diagonalSpeed;
-            currentScreenX -= diagonalSpeed;
-            currentSpriteY = SPRITE_START_WEST_Y;
+            playerScreenY += diagonalSpeed;
+            playerScreenX -= diagonalSpeed;
+            playerSpriteY = SPRITE_START_WEST_Y;
         } else {
             if(isMovingNorth){
-                currentScreenY -= playerSpeed;
-                currentSpriteY = SPRITE_START_NORTH_Y;
+                playerScreenY -= playerSpeed;
+                playerSpriteY = SPRITE_START_NORTH_Y;
             }
             if(isMovingEast){
-                currentScreenX += playerSpeed;
-                currentSpriteY = SPRITE_START_EAST_Y;
+                playerScreenX += playerSpeed;
+                playerSpriteY = SPRITE_START_EAST_Y;
             }
             if(isMovingSouth){
-                currentScreenY += playerSpeed;
-                currentSpriteY = SPRITE_START_SOUTH_Y;
+                playerScreenY += playerSpeed;
+                playerSpriteY = SPRITE_START_SOUTH_Y;
             }
             if(isMovingWest){
-                currentScreenX -= playerSpeed;
-                currentSpriteY = SPRITE_START_WEST_Y;
+                playerScreenX -= playerSpeed;
+                playerSpriteY = SPRITE_START_WEST_Y;
             }
         }
         
 
-        currentSpriteX += CHARACTER_WIDTH;
-        if (currentSpriteX >= SPRITE_WIDTH) 
+        playerSpriteX += CHARACTER_WIDTH;
+        if (playerSpriteX >= SPRITE_WIDTH) 
         {
-            currentSpriteX = SPRITE_START_X;
+            playerSpriteX = SPRITE_START_X;
         }
         
     }
     else {
-        currentSpriteX = CHARACTER_WIDTH;
-        currentSpriteY = SPRITE_START_SOUTH_Y;
+        playerSpriteX = CHARACTER_WIDTH;
+        playerSpriteY = SPRITE_START_SOUTH_Y;
     }
   
     //Draw Image from sprite to screen
-    ctx.drawImage(characterImage, currentSpriteX, currentSpriteY, CHARACTER_WIDTH, CHARACTER_HEIGHT,  //From sprite
-                currentScreenX, currentScreenY, CHARACTER_WIDTH * scalefX, CHARACTER_HEIGHT * scalefY);  //To screen
+    ctx.drawImage(characterImage, playerSpriteX, playerSpriteY, playerWidth, playerHeight,  //From sprite
+                playerScreenX, playerScreenY, playerWidth * scalefX, playerHeight * scalefY);  //To screen
 }
 
 // Draws enemies
@@ -286,15 +289,15 @@ function drawEnemy(){
             enemyArray[i].spriteY = SPRITE_START_EAST_Y;
         }
 
-        currentEnemyX += CHARACTER_WIDTH;
-        if (currentEnemyX >= SPRITE_WIDTH) 
+        enemySpriteX += CHARACTER_WIDTH;
+        if (enemySpriteX >= SPRITE_WIDTH) 
         {
-            currentEnemyX = SPRITE_START_X;
+            enemySpriteX = SPRITE_START_X;
         }
 
         //Draw Image from sprite to screen
-        ctx.drawImage(enemyImage, currentEnemyX, enemyArray[i].spriteY, CHARACTER_WIDTH, CHARACTER_HEIGHT,  //From sprite
-                enemyArray[i].x, enemyArray[i].y, CHARACTER_WIDTH * scalefX, CHARACTER_HEIGHT * scalefY);                 //To screen    
+        ctx.drawImage(enemyImage, enemySpriteX, enemyArray[i].spriteY, playerWidth, playerHeight,  //From sprite
+                enemyArray[i].x, enemyArray[i].y, playerWidth * scalefX, playerHeight * scalefY);                 //To screen    
     }
 }
 
@@ -327,8 +330,8 @@ function enemyMovement(){
     
     for(var i = enemyArray.length - 1; i >= 0; i--){
         // Moves enemy towards player
-        var differenceX = currentScreenX - enemyArray[i].x;
-        var differenceY = currentScreenY - enemyArray[i].y;
+        var differenceX = playerScreenX - enemyArray[i].x;
+        var differenceY = playerScreenY - enemyArray[i].y;
         var hypotenuse = Math.pow((Math.pow(differenceX, 2) + Math.pow(differenceY, 2)), 0.5);
         enemyArray[i].x += enemyArray[i].speed * (differenceX / hypotenuse);
         enemyArray[i].y += enemyArray[i].speed * (differenceY / hypotenuse);
@@ -355,7 +358,7 @@ function enemyMovement(){
 // Collision between enemy and player
 function enemyCollision(){
     for(var i = enemyArray.length - 1; i >= 0; i--){
-        if(collisionDetection(enemyArray[i].x + HITBOX_PLAYER_X, enemyArray[i].y + HITBOX_PLAYER_Y, CHARACTER_WIDTH - HITBOX_PLAYER_WIDTH, CHARACTER_HEIGHT - HITBOX_PLAYER_HEIGHT, currentScreenX + HITBOX_PLAYER_X, currentScreenY + HITBOX_PLAYER_Y, CHARACTER_WIDTH - HITBOX_PLAYER_WIDTH, CHARACTER_HEIGHT - HITBOX_PLAYER_HEIGHT))
+        if(collisionDetection(enemyArray[i].x + HITBOX_PLAYER_X, enemyArray[i].y + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT))
         {
             takeDamage();
         }
@@ -398,7 +401,7 @@ function drawBullet(){
         bulletRangeFunc(i);
         for(var j = enemyArray.length - 1; j >= 0; j--){
             if(bulletArray[i] && enemyArray[j]){
-                if(collisionDetection(enemyArray[j].x + HITBOX_PLAYER_X, enemyArray[j].y + HITBOX_PLAYER_Y/2, CHARACTER_WIDTH - HITBOX_PLAYER_WIDTH, CHARACTER_HEIGHT - HITBOX_PLAYER_HEIGHT/2, bulletArray[i].x, bulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT)){
+                if(collisionDetection(enemyArray[j].x + HITBOX_PLAYER_X, enemyArray[j].y + HITBOX_PLAYER_Y/2, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT/2, bulletArray[i].x, bulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT)){
                     bulletArray.splice(i, 1);
                     enemyArray[j].HP -= damage;
                     if(enemyArray[j].HP <= 0){
@@ -420,8 +423,8 @@ function drawBullet(){
 function shoot(direction){
     if(shootingEnabled){
         var newBullet = new Object();
-        newBullet.x = currentScreenX + (CHARACTER_WIDTH / 2) - (BULLET_WIDTH / 2);
-        newBullet.y = currentScreenY + (CHARACTER_HEIGHT / 2) + (BULLET_HEIGHT / 2);
+        newBullet.x = playerScreenX + (playerWidth / 2) - (BULLET_WIDTH / 2);
+        newBullet.y = playerScreenY + (playerHeight / 2) + (BULLET_HEIGHT / 2);
         newBullet.startX = newBullet.x;
         newBullet.startY = newBullet.y;
         newBullet.direction = direction;
@@ -522,7 +525,7 @@ function bossMovement(){
     // Turns
     if (((bossBatPosX + (BOSS_BAT_WIDTH/2)) > (ctx.canvas.width + 400)) && goRight == true){
         goRight = false;
-        bossBatPosY = currentScreenY - (BOSS_BAT_HEIGHT/2) + (CHARACTER_HEIGHT/2); // Gives boss same Y-value as player
+        bossBatPosY = playerScreenY - (BOSS_BAT_HEIGHT/2) + (playerHeight/2); // Gives boss same Y-value as player
     }
     // Goes left
     if(((bossBatPosX + (BOSS_BAT_WIDTH/2)) >= -400) && goRight == false) {
@@ -531,7 +534,7 @@ function bossMovement(){
     // Turns
     if (((bossBatPosX + (BOSS_BAT_WIDTH/2)) < -400) && goRight == false){
         goRight = true;
-        bossBatPosY = currentScreenY - (BOSS_BAT_HEIGHT/2) + (CHARACTER_HEIGHT/2); // Gives boss same Y-value as player
+        bossBatPosY = playerScreenY - (BOSS_BAT_HEIGHT/2) + (playerHeight/2); // Gives boss same Y-value as player
     }
     // Goes faster the lower the health
     if(bossHealth > 0){
@@ -544,7 +547,7 @@ function bossMovement(){
 function bossCollision(){
     
     // Collision with player
-    if(collisionDetection(bossBatPosX + 140, bossBatPosY + 140, BOSS_BAT_WIDTH -280, BOSS_BAT_HEIGHT -290, currentScreenX + HITBOX_PLAYER_X, currentScreenY + HITBOX_PLAYER_Y, CHARACTER_WIDTH - HITBOX_PLAYER_WIDTH, CHARACTER_HEIGHT - HITBOX_PLAYER_HEIGHT) && bossHealth > 0){
+    if(collisionDetection(bossBatPosX + 140, bossBatPosY + 140, BOSS_BAT_WIDTH -280, BOSS_BAT_HEIGHT -290, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT) && bossHealth > 0){
         takeDamage();
     }
     
@@ -621,7 +624,7 @@ function bossAttack1Collision(){
     // Checks collision with player
     for(var i = bossBulletArray.length - 1; i >= 0; i--){
         if(bossBulletArray[i]){
-            if(collisionDetection(bossBulletArray[i].x, bossBulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT, currentScreenX + HITBOX_PLAYER_X, currentScreenY + HITBOX_PLAYER_Y, CHARACTER_WIDTH - HITBOX_PLAYER_WIDTH, CHARACTER_HEIGHT - HITBOX_PLAYER_HEIGHT)){
+            if(collisionDetection(bossBulletArray[i].x, bossBulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT)){
                 takeDamage();
             }
         }
@@ -724,6 +727,16 @@ function keyDownHandler(event){
             resumeGame();
         }    
     }
+    
+    // Toggle hitboxes
+    if (event.keyCode == H){
+        if(showHitboxes == false){
+            showHitboxes = true; // Shows hitboxes
+        }
+        else {
+            showHitboxes = false; // Hides hitboxes
+        }    
+    }
 }
 
 // Detects released key
@@ -780,24 +793,25 @@ function resumeGame(){
 
 //Check for collisions - Returns true if the rectangles collides, otherwise false
 function collisionDetection(x1, y1, w1, h1, x2, y2, w2, h2){
-  //x1, y1 = x and y coordinates of rectangle 1
-  //w1, h1 = width and height of rectangle 1
-  //x2, y2 = x and y coordinates of rectangle 2
-  //w2, h2 = width and height of rectangle 2
-  
-  ctx.beginPath();
-  ctx.strokeStyle = 'red';
-  ctx.rect(x1,y1,w1,h1);
-  ctx.rect(x2,y2,w2,h2);
-  ctx.stroke();
-  
-  if (x1 <= x2+w2 && x2 <= x1+w1 && y1 <= y2+h2 && y2 <= y1+h1)
-  {
-	return true;
-  }
-  else 
-    return false;
-}
+    //x1, y1 = x and y coordinates of rectangle 1
+    //w1, h1 = width and height of rectangle 1
+    //x2, y2 = x and y coordinates of rectangle 2
+    //w2, h2 = width and height of rectangle 2
+    if(showHitboxes){
+        ctx.beginPath();
+        ctx.strokeStyle = "red";
+        ctx.rect(x1,y1,w1,h1);
+        ctx.rect(x2,y2,w2,h2);
+        ctx.stroke();
+    }
+
+    if (x1 <= x2+w2 && x2 <= x1+w1 && y1 <= y2+h2 && y2 <= y1+h1)
+    {
+        return true;
+    }
+    else 
+        return false;
+    }
 
 // Draws hearts
 function drawHearts(){
@@ -842,8 +856,8 @@ function shootingDelayFunc(){
 function spawnBooster(j){
     if(Math.random() < 0.2){
        var booster = new Object();
-        booster.x = enemyArray[j].x + ((CHARACTER_WIDTH - BOOSTER_WIDTH) / 2);
-        booster.y = enemyArray[j].y + (CHARACTER_HEIGHT - BOOSTER_HEIGHT);
+        booster.x = enemyArray[j].x + ((playerWidth - BOOSTER_WIDTH) / 2);
+        booster.y = enemyArray[j].y + (playerHeight - BOOSTER_HEIGHT);
         booster.magnetForce = BOOSTER_MAGNETFORCE;
         var randomBooster = Math.floor(Math.random() * 4);
         if(randomBooster == 0){
@@ -863,8 +877,8 @@ function spawnBooster(j){
 function drawBooster(){
     for(var i = boosterArray.length - 1; i >= 0; i--){
         
-        var differenceX = currentScreenX + (CHARACTER_WIDTH / 2) - boosterArray[i].x - (BOOSTER_WIDTH / 2);
-        var differenceY = currentScreenY + (CHARACTER_HEIGHT / 2) - boosterArray[i].y - (BOOSTER_HEIGHT / 2);
+        var differenceX = playerScreenX + (playerWidth / 2) - boosterArray[i].x - (BOOSTER_WIDTH / 2);
+        var differenceY = playerScreenY + (playerHeight / 2) - boosterArray[i].y - (BOOSTER_HEIGHT / 2);
         
         if((Math.abs(differenceX) < BOOSTER_MAGNETFORCE_RANGE) && (Math.abs(differenceY) < BOOSTER_MAGNETFORCE_RANGE)){
            var hypotenuse = Math.pow((Math.pow(differenceX, 2) + Math.pow(differenceY, 2)), 0.5);
@@ -881,7 +895,7 @@ function drawBooster(){
 function boosterCollision(){
     
     for(var i = boosterArray.length - 1; i >= 0; i--){
-        if(collisionDetection(boosterArray[i].x, boosterArray[i].y, BOOSTER_WIDTH , BOOSTER_HEIGHT, currentScreenX + HITBOX_PLAYER_X, currentScreenY + HITBOX_PLAYER_Y, CHARACTER_WIDTH - HITBOX_PLAYER_WIDTH, CHARACTER_HEIGHT - HITBOX_PLAYER_HEIGHT)){
+        if(collisionDetection(boosterArray[i].x, boosterArray[i].y, BOOSTER_WIDTH , BOOSTER_HEIGHT, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT)){
             if(boosterArray[i].img == boostSpeed){
                 if(playerSpeed < 15){
                     playerSpeed += 0.2;
