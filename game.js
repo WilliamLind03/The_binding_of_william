@@ -24,16 +24,16 @@ var bulletArray = [];
 var enemyArray = [];
 var heartArray = [];
 // Game values                 ___
-var enemyAmount = 10; //       (o_o)
+var enemyAmount = 1; //       (o_o)
 var playerHealth = 6; //        |
-var damage = 1; //             /|\
+var damage = 10; //             /|\
 var score = 0; //            _/ | \_
 var level = 1; //              / \
 // Positions                 _/   \_
 var playerScreenX = SCREEN_CHARACTER_X;
 var playerScreenY = SCREEN_CHARACTER_Y;
 var bossBatPosX;
-var bossBatPosY;
+var bossBatPosY = playerScreenY;
 // Spritesheet positions
 var playerSpriteX = SPRITE_START_X;
 var playerSpriteY = SPRITE_START_EAST_Y;
@@ -114,11 +114,13 @@ function init(){
     $(document).keyup(keyUpHandler);
     gameloop = setInterval(loop, TIME_PER_FRAME);
     spawnEnemies();
+    
+    // Random spawn location for boss
     var bossSpawnPosX = Math.random();
     if (bossSpawnPosX > 0.5){
-        bossBatPosX = -400 - BOSS_BAT_WIDTH;
+        bossBatPosX = -400 - BOSS_BAT_WIDTH; // Spawn left side
     } else {
-        bossBatPosX = ctx.canvas.width + 400 - BOSS_BAT_WIDTH;
+        bossBatPosX = ctx.canvas.width + 400 - BOSS_BAT_WIDTH; // Spawn right side
     }
 }
 
@@ -189,6 +191,7 @@ function loop(){
     }
     
     console.log(scalefX, scalefY);
+    console.log(bossBatPosX);
 }
 
 // Player rendering/movement
@@ -296,8 +299,8 @@ function drawEnemy(){
         }
 
         //Draw Image from sprite to screen
-        ctx.drawImage(enemyImage, enemySpriteX, enemyArray[i].spriteY, playerWidth, playerHeight,  //From sprite
-                enemyArray[i].x, enemyArray[i].y, playerWidth * scalefX, playerHeight * scalefY);                 //To screen    
+        ctx.drawImage(enemyImage, enemySpriteX, enemyArray[i].spriteY, playerWidth, playerHeight, //From sprite
+                enemyArray[i].x, enemyArray[i].y, playerWidth * scalefX, playerHeight * scalefY); //To screen    
     }
 }
 
@@ -506,7 +509,7 @@ function drawBoss(){
             bossBatSpriteX = SPRITE_START_X;
         }
         
-        ctx.drawImage(bossBatImage, bossBatSpriteX, 0, BOSS_BAT_WIDTH, BOSS_BAT_HEIGHT, bossBatPosX, bossBatPosY, BOSS_BAT_WIDTH, BOSS_BAT_HEIGHT);
+        ctx.drawImage(bossBatImage, bossBatSpriteX, 0, BOSS_BAT_WIDTH, BOSS_BAT_HEIGHT, bossBatPosX, bossBatPosY, BOSS_BAT_WIDTH * scalefX, BOSS_BAT_HEIGHT * scalefY);
     } 
     // Draws boss dead
     else {
@@ -638,8 +641,13 @@ function resetBoss(){
     bossSpeed = BOSS_BAT_SPEED + (level / BOSS_SPAWN_LVL);
     bossMaxHealth = Math.floor(bossMaxHealth + bossMaxHealth * 0.5);
     bossHealth = bossMaxHealth;
-    bossBatPosX = BOSS_BAT_X;
-    bossBatPosY = BOSS_BAT_Y;
+    var bossSpawnPosX = Math.random();
+    if (bossSpawnPosX > 0.5){
+        bossBatPosX = -400 - BOSS_BAT_WIDTH; // Spawn left side
+    } else {
+        bossBatPosX = ctx.canvas.width + 400 - BOSS_BAT_WIDTH; // Spawn right side
+    }
+    bossBatPosY = playerScreenY;
     attack1Started = false;
     if(currentBossStage < bossStages.length - 1){
         currentBossStage++;
