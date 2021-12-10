@@ -9,9 +9,6 @@ const GAME_BACKGROUND_COLOR = "#512B00";
 const COUNTER_X = 10;   //X-coord for the counter
 const COUNTER_Y = 50;  //Y-coord for the counter
 
-const LEVEL_X = (window.innerWidth / 2);
-const LEVEL_Y = (window.innerHeight / 2);
-
 const PATH_CHARACTER = "img/spritesheet3.png";
 const PATH_ENEMY = "img/enemy_spritesheet.png";
 const PATH_BOSS_STAGE_1 = "img/boss_stage_1.png";
@@ -34,9 +31,9 @@ const BOOSTER_MAGNETFORCE = 10;
 const BOOSTER_MAGNETFORCE_RANGE = 100;
 
 const HEART_WIDTH = 40;
-const HEART_FIRST_POS_X = window.innerWidth - 350;
 const HEART_POS_Y = 10;
 const HEART_DISTANCE_BETWEEN = 5;
+const HEART_FIRST_POS_X = (45*7 + 10);
 
 const BOSS_BAT_WIDTH = 384;
 const BOSS_BAT_HEIGHT = 384;
@@ -72,9 +69,9 @@ const SCREEN_CHARACTER_Y = (window.innerHeight / 2) - 35;
 const SCREEN_CHARACTER_SPEED = 5;
 
 const SPRITE_START_NORTH_Y = 2;
-const SPRITE_START_EAST_Y = 98;
+const SPRITE_START_EAST_Y = 104;
 const SPRITE_START_SOUTH_Y = 198;
-const SPRITE_START_WEST_Y = 290;
+const SPRITE_START_WEST_Y = 296;
 
 const HITBOX_PLAYER_X = 20;
 const HITBOX_PLAYER_Y = 50;
