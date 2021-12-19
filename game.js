@@ -29,9 +29,9 @@ var heartArray = [];
 // Game values
 var enemyAmount = 10;
 var playerHealth = 6;
-var damage = 10;
+var damage = 1;
 var score = 0;
-var level = 4;
+var level = 1;
 // Positions
 var playerScreenX = SCREEN_CHARACTER_X;
 var playerScreenY = SCREEN_CHARACTER_Y;
