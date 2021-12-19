@@ -1,6 +1,6 @@
 "use strict";
 
-const TIME_PER_FRAME = 17;   //this means 30 fps 
+const TIME_PER_FRAME = 17;   //this means 60 fps 
 
 const GAME_FONT = "bold 20px sans-serif";
 const GAME_FONT_COLOR = "white";
@@ -35,16 +35,18 @@ const HEART_POS_Y = 10;
 const HEART_DISTANCE_BETWEEN = 5;
 const HEART_FIRST_POS_X = (45*7 + 10);
 
-const BOSS_BAT_WIDTH = 384;
-const BOSS_BAT_HEIGHT = 384;
-const BOSS_BAT_SPRITE_WIDTH = 3456;
-const BOSS_BAT_SPRITE_START_X = 0;
-const BOSS_BAT_SPEED = 10;
-const BOSS_BAT_ATTACKSPEED = 20;
+const BOSS_WIDTH = 384;
+const BOSS_HEIGHT = 384;
+const BOSS_SPRITE_WIDTH = 3456;
+const BOSS_SPRITE_START_X = 0;
+const BOSS_SPEED = 15;
+const BOSS_ATTACKSPEED = 20;
+
 const BOSS_SPAWN_LVL = 5;
 const BOSS_HEALTH = 100;
 const BOSS_BULLET_SPEED = 5;
 const BOSS_BULLET_AMOUNT = 10;
+
 const BOSS_HEALTHBAR_WIDTH = 500;
 const BOSS_HEALTHBAR_HEIGHT = 30;
 const BOSS_HEALTHBAR_X = (window.innerWidth / 2) - (BOSS_HEALTHBAR_WIDTH / 2)
@@ -93,6 +95,7 @@ const W = 87;
 const D = 68;
 const S = 83;
 const A = 65;
+
 const H = 72;
 
 const SPACE = 32;

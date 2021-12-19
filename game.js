@@ -3,19 +3,22 @@
 
 $(document).ready(init);
 
-var ctx, counter, gameloop, pausedGame, diagonalSpeed, bossAnimation, bossMovementInterval, damageDelay, enemiesLeft, bossAttack1Interval, scalefX, scalefY; 
+var scalefX = $(window).width() / 1920;
+var scalefY = $(window).height() / 969;
+
+var ctx, counter, gameloop, pausedGame, diagonalSpeed, bossAnimation, bossMovementInterval, damageDelay, enemiesLeft, bossAttackInterval; 
 // Images
 var boostFiringspeed = new Image();
 var bossBulletImage = new Image();
 var characterImage = new Image();
 var bossDeadImage = new Image();
-var bossBatImage = new Image();
 var boostDamage = new Image();
 var bulletImage = new Image();
 var heartImage = new Image();
 var boostSpeed = new Image();
 var boostRange = new Image();
 var enemyImage = new Image();
+var bossImage = new Image();
 // Lists
 var bossStages = [PATH_BOSS_STAGE_1, PATH_BOSS_STAGE_2, PATH_BOSS_STAGE_3, PATH_BOSS_STAGE_4];
 var bossBulletArray = [];
@@ -23,23 +26,23 @@ var boosterArray = [];
 var bulletArray = [];
 var enemyArray = [];
 var heartArray = [];
-// Game values                 ___
-var enemyAmount = 1; //       (o_o)
-var playerHealth = 6; //        |
-var damage = 10; //             /|\
-var score = 0; //            _/ | \_
-var level = 1; //              / \
-// Positions                 _/   \_
+// Game values
+var enemyAmount = 10;
+var playerHealth = 6;
+var damage = 10;
+var score = 0;
+var level = 4;
+// Positions
 var playerScreenX = SCREEN_CHARACTER_X;
 var playerScreenY = SCREEN_CHARACTER_Y;
-var bossBatPosX;
-var bossBatPosY = playerScreenY;
+var bossPosX;
+var bossPosY;
 // Spritesheet positions
 var playerSpriteX = SPRITE_START_X;
 var playerSpriteY = SPRITE_START_EAST_Y;
-var enemySpriteX = SPRITE_START_X;
-var enemySpriteY = SPRITE_START_EAST_Y;
-var bossBatSpriteX = 0;
+var enemyScreenX = SPRITE_START_X;
+var enemyScreenY = SPRITE_START_EAST_Y;
+var bossSpriteX = 0;
 // Booleans 
 var backgroundSoundStarted = false;
 var bossSpawnSoundPlayed = false;
@@ -54,57 +57,53 @@ var showHitboxes = false;
 var gamePaused = false;
 var isGameover = false;
 var bossKilled = true;
-var isMoving = false;
-var goRight = true;
+var bossGoRight = true;
 // Sounds
 var bossBackgroundSound = new sound("sound/boss_background.mp3", true);
 var bossSpawnSound = new sound("sound/boss_spawn.mp3", false);
 
+var playerWidth = CHARACTER_WIDTH * scalefX;
+var playerHeight = CHARACTER_HEIGHT * scalefY;
+var bulletWidth = BULLET_WIDTH * scalefX;
+var bulletHeight = BULLET_HEIGHT * scalefY;
+var enemyMaxSpeed = ENEMY_MAX_SPEED * ((scalefX + scalefY) / 2);
+var enemyMinSpeed = ENEMY_MIN_SPEED * ((scalefX + scalefY) / 2);
+var heartWidth = HEART_WIDTH * scalefX;
+var heartHeight = HEART_WIDTH * scalefY;
+
 var bossBulletAmount = BOSS_BULLET_AMOUNT;
-var playerSpeed = SCREEN_CHARACTER_SPEED;
+var playerSpeed = SCREEN_CHARACTER_SPEED * ((scalefX + scalefY) / 2);
 var shootingDelay = SHOOTING_DELAY;
 var shootingRange = SHOOTING_RANGE;
 var bossMaxHealth = BOSS_HEALTH;
-var bossSpeed = BOSS_BAT_SPEED;
+var bossSpeed = BOSS_SPEED;
 var bulletSpeed = BULLET_SPEED;
 var bossHealth = BOSS_HEALTH;
 var currentBossStage = 0;
 var enemyFacing = SOUTH;
 var facing = SOUTH;
-var heartX;
-var heartY;
-var pickedUpSpeed, pickedUpFiringspeed, pickedUpDamage, pickedUpRange;
-var boostTextPosY = playerScreenY;
-//Player variables
-var playerWidth = CHARACTER_WIDTH * 1;
-var playerHeight = CHARACTER_HEIGHT * 1;
 
 
 function init(){
     enemiesLeft = enemyAmount;
     ctx = $("#gameCanvas")[0].getContext("2d");  
-    $('body').css('margin', '0');  //No margins
+    $('body').css('margin', '0'); //No margins
     $('body').css('overflow', 'hidden'); //Hide scrollbars
     $('body').css('backgroundImage', 'radial-gradient(#333, #222, #111)');
-    ctx.canvas.width  = $(window).width();
+    ctx.canvas.width = $(window).width();
     ctx.canvas.height = $(window).height();	
-    
-    scalefX = ctx.canvas.width / 1920;
-    scalefY = ctx.canvas.height / 969;
-    
-    console.log(ctx.canvas.height);
     
     $(window).resize(setCanvas);
     setCanvas();
     
+    // Loads images
     characterImage.src = PATH_CHARACTER;
     enemyImage.src = PATH_ENEMY;
     bulletImage.src = PATH_BULLET;
     heartImage.src = PATH_HEART;
-    bossBatImage.src = bossStages[currentBossStage];
+    bossImage.src = bossStages[currentBossStage];
     bossDeadImage.src = PATH_BOSS_DEAD;
     bossBulletImage.src = PATH_BOSS_BULLET;
-    
     boostSpeed.src = PATH_BOOST_SPEED;
     boostFiringspeed.src = PATH_BOOST_FIRINGSPEED;
     boostRange.src = PATH_BOOST_RANGE;
@@ -113,20 +112,19 @@ function init(){
     $(document).keydown(keyDownHandler);
     $(document).keyup(keyUpHandler);
     gameloop = setInterval(loop, TIME_PER_FRAME);
-    spawnEnemies();
-    
-    // Random spawn location for boss
+
     var bossSpawnPosX = Math.random();
     if (bossSpawnPosX > 0.5){
-        bossBatPosX = -400 - BOSS_BAT_WIDTH; // Spawn left side
+        bossPosX = (-400 + BOSS_WIDTH) * scalefX;
     } else {
-        bossBatPosX = ctx.canvas.width + 400 - BOSS_BAT_WIDTH; // Spawn right side
+        bossPosX = ctx.canvas.width + (400 - BOSS_WIDTH) * scalefX;
     }
+    spawnEnemies();
 }
 
 //Game Loop
 function loop(){
-    setCanvas();
+    //setCanvas();
     ctx.font = "bold " + (30 * scalefX) + "px san-serif";
     
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -182,16 +180,16 @@ function loop(){
     drawCharacter();
     enemyMovement();
     drawBullet();
-    drawBossAttack1();
+    drawbossAttack();
     enemyCollision();
     drawHearts();
+    //spawnEnemies();
 
     if(playerHealth == 0){
         gameover();
     }
     
     console.log(scalefX, scalefY);
-    console.log(bossBatPosX);
 }
 
 // Player rendering/movement
@@ -267,8 +265,8 @@ function drawCharacter(){
     }
   
     //Draw Image from sprite to screen
-    ctx.drawImage(characterImage, playerSpriteX, playerSpriteY, playerWidth, playerHeight,  //From sprite
-                playerScreenX, playerScreenY, playerWidth * scalefX, playerHeight * scalefY);  //To screen
+    ctx.drawImage(characterImage, playerSpriteX, playerSpriteY, CHARACTER_WIDTH, CHARACTER_HEIGHT,  //From sprite
+                playerScreenX, playerScreenY, playerWidth, playerHeight);  //To screen
 }
 
 // Draws enemies
@@ -292,15 +290,15 @@ function drawEnemy(){
             enemyArray[i].spriteY = SPRITE_START_EAST_Y;
         }
 
-        enemySpriteX += CHARACTER_WIDTH;
-        if (enemySpriteX >= SPRITE_WIDTH) 
+        enemyScreenX += CHARACTER_WIDTH;
+        if (enemyScreenX >= SPRITE_WIDTH) 
         {
-            enemySpriteX = SPRITE_START_X;
+            enemyScreenX = SPRITE_START_X;
         }
 
         //Draw Image from sprite to screen
-        ctx.drawImage(enemyImage, enemySpriteX, enemyArray[i].spriteY, playerWidth, playerHeight, //From sprite
-                enemyArray[i].x, enemyArray[i].y, playerWidth * scalefX, playerHeight * scalefY); //To screen    
+        ctx.drawImage(enemyImage, enemyScreenX, enemyArray[i].spriteY, CHARACTER_WIDTH, CHARACTER_HEIGHT,  //From sprite
+                enemyArray[i].x, enemyArray[i].y, playerWidth, playerHeight);                 //To screen    
     }
 }
 
@@ -321,7 +319,7 @@ function spawnEnemies(){
         else{
             enemy.y = Math.random() * ctx.canvas.height;
         }
-        enemy.speed = (Math.random() * (ENEMY_MAX_SPEED - ENEMY_MIN_SPEED)) + ENEMY_MIN_SPEED;
+        enemy.speed = (Math.random() * (enemyMaxSpeed - enemyMinSpeed)) + enemyMinSpeed;
         enemy.HP = ENEMY_HP;
         enemy.facing = SOUTH;
         enemyArray.push(enemy);
@@ -361,9 +359,10 @@ function enemyMovement(){
 // Collision between enemy and player
 function enemyCollision(){
     for(var i = enemyArray.length - 1; i >= 0; i--){
-        if(collisionDetection(enemyArray[i].x + HITBOX_PLAYER_X, enemyArray[i].y + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT))
+        if(collisionDetection(enemyArray[i].x + playerWidth * 0.3, enemyArray[i].y + HITBOX_PLAYER_Y * scalefY, playerWidth * 0.4, playerHeight - HITBOX_PLAYER_HEIGHT * scalefY, playerScreenX + playerWidth * 0.3, playerScreenY + HITBOX_PLAYER_Y * scalefY, playerWidth * 0.4, playerHeight - HITBOX_PLAYER_HEIGHT * scalefY))
         {
-            takeDamage();
+            //takeDamage();
+            //enemyArray.splice(i,1);
         }
     }
 }
@@ -394,9 +393,9 @@ function drawBullet(){
             bulletArray[i].x -= BULLET_DIRECTION_SPEED;
         }
         
-        ctx.drawImage(bulletImage, bulletArray[i].x, bulletArray[i].y, BULLET_WIDTH * scalefX, BULLET_HEIGHT * scalefY);
+        ctx.drawImage(bulletImage, bulletArray[i].x, bulletArray[i].y, bulletWidth, bulletHeight);
         
-        if(bulletArray[i].y > ctx.canvas.height || bulletArray[i].y < -BULLET_HEIGHT || bulletArray[i].x < -BULLET_WIDTH ||  bulletArray[i].x > ctx.canvas.width)
+        if(bulletArray[i].y > ctx.canvas.height || bulletArray[i].y < -bulletHeight || bulletArray[i].x < -bulletWidth ||  bulletArray[i].x > ctx.canvas.width)
         {
             bulletArray.splice(i, 1);
         }
@@ -404,7 +403,7 @@ function drawBullet(){
         bulletRangeFunc(i);
         for(var j = enemyArray.length - 1; j >= 0; j--){
             if(bulletArray[i] && enemyArray[j]){
-                if(collisionDetection(enemyArray[j].x + HITBOX_PLAYER_X, enemyArray[j].y + HITBOX_PLAYER_Y/2, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT/2, bulletArray[i].x, bulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT)){
+                if(collisionDetection(enemyArray[j].x + playerWidth * 0.3, enemyArray[j].y + playerHeight * 0.3, playerWidth * 0.4, playerHeight * 0.6, bulletArray[i].x, bulletArray[i].y, bulletWidth, bulletHeight)){
                     bulletArray.splice(i, 1);
                     enemyArray[j].HP -= damage;
                     if(enemyArray[j].HP <= 0){
@@ -426,8 +425,8 @@ function drawBullet(){
 function shoot(direction){
     if(shootingEnabled){
         var newBullet = new Object();
-        newBullet.x = playerScreenX + (playerWidth / 2) - (BULLET_WIDTH / 2);
-        newBullet.y = playerScreenY + (playerHeight / 2) + (BULLET_HEIGHT / 2);
+        newBullet.x = playerScreenX + (playerWidth/ 2) - (bulletWidth / 2);
+        newBullet.y = playerScreenY + (playerHeight / 2) + (bulletHeight / 2);
         newBullet.startX = newBullet.x;
         newBullet.startY = newBullet.y;
         newBullet.direction = direction;
@@ -497,23 +496,23 @@ function drawBoss(){
     
     // Attack interval
     if(attack1Started == false){
-        bossAttack1Interval = setInterval(bossAttack1, 1200 - (300 * currentBossStage));
+        bossAttackInterval = setInterval(bossAttack, 900 - (250 * currentBossStage));
         attack1Started = true;
     }
 
     // Draws boss alive
     if(bossHealth > 0){
         // Updates boss sprite
-        bossBatSpriteX += BOSS_BAT_WIDTH;
-        if (bossBatSpriteX >= BOSS_BAT_SPRITE_WIDTH){
-            bossBatSpriteX = SPRITE_START_X;
+        bossSpriteX += BOSS_WIDTH;
+        if (bossSpriteX >= BOSS_SPRITE_WIDTH){
+            bossSpriteX = BOSS_SPRITE_START_X;
         }
         
-        ctx.drawImage(bossBatImage, bossBatSpriteX, 0, BOSS_BAT_WIDTH, BOSS_BAT_HEIGHT, bossBatPosX, bossBatPosY, BOSS_BAT_WIDTH * scalefX, BOSS_BAT_HEIGHT * scalefY);
+        ctx.drawImage(bossImage, bossSpriteX, 0, BOSS_WIDTH, BOSS_HEIGHT, bossPosX, bossPosY, BOSS_WIDTH * scalefX, BOSS_HEIGHT * scalefY);
     } 
     // Draws boss dead
     else {
-        ctx.drawImage(bossDeadImage, bossBatPosX, bossBatPosY);
+        ctx.drawImage(bossDeadImage, bossPosX, bossPosY, BOSS_WIDTH * scalefX, BOSS_HEIGHT * scalefY);
     }
     
 }
@@ -522,26 +521,26 @@ function drawBoss(){
 function bossMovement(){
     
     // Goes right
-    if(((bossBatPosX + (BOSS_BAT_WIDTH/2)) <= (ctx.canvas.width + 400)) && goRight == true) {
-       bossBatPosX += bossSpeed;
+    if(((bossPosX + (BOSS_WIDTH/2)) <= (ctx.canvas.width + 400 * scalefX)) && bossGoRight == true) {
+       bossPosX += bossSpeed * scalefX;
     }
     // Turns
-    if (((bossBatPosX + (BOSS_BAT_WIDTH/2)) > (ctx.canvas.width + 400)) && goRight == true){
-        goRight = false;
-        bossBatPosY = playerScreenY - (BOSS_BAT_HEIGHT/2) + (playerHeight/2); // Gives boss same Y-value as player
+    if (((bossPosX + (BOSS_WIDTH/2)) > (ctx.canvas.width + 400 * scalefX)) && bossGoRight == true){
+        bossGoRight = false;
+        bossPosY = playerScreenY - (BOSS_HEIGHT * scalefY/2) + (playerHeight * scalefY/2); // Gives boss same Y-value as player
     }
     // Goes left
-    if(((bossBatPosX + (BOSS_BAT_WIDTH/2)) >= -400) && goRight == false) {
-       bossBatPosX -= bossSpeed;
+    if(((bossPosX + (BOSS_WIDTH/2)) >= -400 * scalefX) && bossGoRight == false) {
+       bossPosX -= bossSpeed * scalefX;
     }
     // Turns
-    if (((bossBatPosX + (BOSS_BAT_WIDTH/2)) < -400) && goRight == false){
-        goRight = true;
-        bossBatPosY = playerScreenY - (BOSS_BAT_HEIGHT/2) + (playerHeight/2); // Gives boss same Y-value as player
+    if (((bossPosX + (BOSS_WIDTH/2)) < -400 * scalefX) && bossGoRight == false){
+        bossGoRight = true;
+        bossPosY = playerScreenY - (BOSS_HEIGHT * scalefY/2) + (playerHeight * scalefY/2); // Gives boss same Y-value as player
     }
     // Goes faster the lower the health
     if(bossHealth > 0){
-        bossSpeed = BOSS_BAT_SPEED * (2 - (bossHealth/bossMaxHealth));
+        bossSpeed = BOSS_SPEED * (2 - (bossHealth/bossMaxHealth));
     }
     
 }
@@ -550,13 +549,13 @@ function bossMovement(){
 function bossCollision(){
     
     // Collision with player
-    if(collisionDetection(bossBatPosX + 140, bossBatPosY + 140, BOSS_BAT_WIDTH -280, BOSS_BAT_HEIGHT -290, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT) && bossHealth > 0){
+    if(collisionDetection(bossPosX + 140 * scalefX, bossPosY + 140 * scalefY, (BOSS_WIDTH -280) * scalefX, (BOSS_HEIGHT -290) * scalefY, playerScreenX + HITBOX_PLAYER_X * scalefX, playerScreenY + HITBOX_PLAYER_Y * scalefY, playerWidth - HITBOX_PLAYER_WIDTH * scalefX, playerHeight - HITBOX_PLAYER_HEIGHT * scalefY) && bossHealth > 0){
         takeDamage();
     }
     
     // Collision with bullet
     for(var i = bulletArray.length - 1; i >= 0; i--){
-        if(collisionDetection(bossBatPosX + 140, bossBatPosY + 140, BOSS_BAT_WIDTH -280, BOSS_BAT_HEIGHT -290, bulletArray[i].x, bulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT)){
+        if(collisionDetection(bossPosX + 140 * scalefX, bossPosY + 140 * scalefY, (BOSS_WIDTH -280) * scalefX, (BOSS_HEIGHT -290) * scalefY, bulletArray[i].x, bulletArray[i].y, bulletWidth, bulletHeight)){
             bulletArray.splice(i, 1);
             if(bossHealth > 0){
                 bossHealth -= damage;
@@ -567,12 +566,12 @@ function bossCollision(){
     
     // Checks if boss is dead
     if(bossHealth <= 0){
-        clearInterval(bossAttack1Interval);
+        clearInterval(bossAttackInterval);
         bossHealth = 0;
         // Slows boss down
         if(bossSpeed > 0){
             bossSpeed -= 1;
-            bossBatPosY += 3;
+            bossPosY += 3;
         }
         else if (bossSpeed <= 0){
             bossSpeed = 0;
@@ -589,45 +588,45 @@ function bossCollision(){
 }
 
 // Boss attack
-function bossAttack1(){
+function bossAttack(){
     // Creates bullets
     for(var i = 0; i < bossBulletAmount; i++){
         var bossBullet = new Object();
-        var randInt = Math.random() * 360;
+        var randInt = Math.random() * 360; // Random angle
         bossBullet.speedX = BOSS_BULLET_SPEED * Math.cos(randInt);
         bossBullet.speedY = BOSS_BULLET_SPEED * Math.sin(randInt);
-        bossBullet.x = bossBatPosX + (BOSS_BAT_WIDTH/2);
-        bossBullet.y = bossBatPosY + (BOSS_BAT_HEIGHT/2);
+        bossBullet.x = bossPosX + (BOSS_WIDTH * scalefX/2);
+        bossBullet.y = bossPosY + (BOSS_HEIGHT * scalefY/2);
         bossBulletArray.push(bossBullet);
     }
 }
 
 // Draws boss attack
-function drawBossAttack1(){
+function drawbossAttack(){
     
-    bossAttack1Collision();
+    bossAttackCollision();
     
     for(var i = bossBulletArray.length - 1; i >= 0; i--){
         console.log(bossBulletArray[i].speed);
-        bossBulletArray[i].x += bossBulletArray[i].speedX;
-        bossBulletArray[i].y += bossBulletArray[i].speedY;
+        bossBulletArray[i].x += bossBulletArray[i].speedX * scalefX;
+        bossBulletArray[i].y += bossBulletArray[i].speedY * scalefY;
         
-        // draws boss bullets
-        ctx.drawImage(bossBulletImage, bossBulletArray[i].x, bossBulletArray[i].y);
+        // Draws boss bullets
+        ctx.drawImage(bossBulletImage, bossBulletArray[i].x, bossBulletArray[i].y, bulletWidth, bulletHeight);
         
-        // Removes if outside of screen
-        if(bossBulletArray[i].x < -400 || bossBulletArray[i].x > ctx.canvas.width + 400 || bossBulletArray[i].y < BULLET_HEIGHT || bossBulletArray[i].y > ctx.canvas.height){
+        // Removes boss bullets if outside of screen
+        if(bossBulletArray[i].x < -400 || bossBulletArray[i].x > ctx.canvas.width + 400 || bossBulletArray[i].y < bulletHeight || bossBulletArray[i].y > ctx.canvas.height){
             bossBulletArray.splice(i, 1);
         } 
     }
 }
 
 // Checks collision from boss attack
-function bossAttack1Collision(){
+function bossAttackCollision(){
     // Checks collision with player
     for(var i = bossBulletArray.length - 1; i >= 0; i--){
         if(bossBulletArray[i]){
-            if(collisionDetection(bossBulletArray[i].x, bossBulletArray[i].y, BULLET_WIDTH, BULLET_HEIGHT, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT)){
+            if(collisionDetection(bossBulletArray[i].x, bossBulletArray[i].y, bulletWidth, bulletHeight, playerScreenX + HITBOX_PLAYER_X * scalefX, playerScreenY + HITBOX_PLAYER_Y * scalefY, playerWidth - HITBOX_PLAYER_WIDTH * scalefX, playerHeight - HITBOX_PLAYER_HEIGHT * scalefY)){
                 takeDamage();
             }
         }
@@ -638,21 +637,14 @@ function bossAttack1Collision(){
 // Resets boss values
 function resetBoss(){
     nextLevel();
-    bossSpeed = BOSS_BAT_SPEED + (level / BOSS_SPAWN_LVL);
+    bossSpeed = BOSS_SPEED + (level / BOSS_SPAWN_LVL) * 2;
     bossMaxHealth = Math.floor(bossMaxHealth + bossMaxHealth * 0.5);
     bossHealth = bossMaxHealth;
-    var bossSpawnPosX = Math.random();
-    if (bossSpawnPosX > 0.5){
-        bossBatPosX = -400 - BOSS_BAT_WIDTH; // Spawn left side
-    } else {
-        bossBatPosX = ctx.canvas.width + 400 - BOSS_BAT_WIDTH; // Spawn right side
-    }
-    bossBatPosY = playerScreenY;
     attack1Started = false;
     if(currentBossStage < bossStages.length - 1){
         currentBossStage++;
     }
-    bossBatImage.src = bossStages[currentBossStage]; // Updates boss sprite
+    bossImage.src = bossStages[currentBossStage]; // Updates boss sprite
     bossKilled = true;
     backgroundSoundStarted == false;
 }
@@ -661,45 +653,36 @@ function resetBoss(){
 function bossHealthbar(){
     // Healthbar background
     ctx.fillStyle = "black";
-    ctx.fillRect(BOSS_HEALTHBAR_X - 3, BOSS_HEALTHBAR_Y - 3, BOSS_HEALTHBAR_WIDTH + 6, BOSS_HEALTHBAR_HEIGHT + 6);
+    ctx.fillRect(BOSS_HEALTHBAR_X - 3, (BOSS_HEALTHBAR_Y - 3), (BOSS_HEALTHBAR_WIDTH + 6) * scalefX, (BOSS_HEALTHBAR_HEIGHT + 6) * scalefY);
     
     // Health
     ctx.fillStyle = "red";
-    ctx.fillRect(BOSS_HEALTHBAR_X, BOSS_HEALTHBAR_Y, ((BOSS_HEALTHBAR_WIDTH / bossMaxHealth) * bossHealth), BOSS_HEALTHBAR_HEIGHT);
+    ctx.fillRect(BOSS_HEALTHBAR_X, BOSS_HEALTHBAR_Y, ((BOSS_HEALTHBAR_WIDTH * scalefX / bossMaxHealth) * bossHealth), BOSS_HEALTHBAR_HEIGHT * scalefY);
     ctx.fillStyle = "white";
     ctx.font = "bold 20px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(bossHealth, (ctx.canvas.width/2), BOSS_HEALTHBAR_Y + 20);
-    
+    ctx.fillText(bossHealth, (ctx.canvas.width/2), (BOSS_HEALTHBAR_Y + 20) * scalefY);
 }
 
 // Detects pressed key
 function keyDownHandler(event){
     
     // Movement inputs
-    if (event.keyCode == W) 
-    {
+    if (event.keyCode == W){
         facing = NORTH;
         isMovingNorth = true;
-        isMoving = true;
     }
-    if (event.keyCode == D) 
-    {
+    if (event.keyCode == D){
         facing = EAST;
         isMovingEast = true;
-        isMoving = true;
     }
-    if (event.keyCode == S) 
-    {
+    if (event.keyCode == S){
         facing = SOUTH;
         isMovingSouth = true;
-        isMoving = true;
     }
-    if (event.keyCode == A) 
-    {
+    if (event.keyCode == A){
         facing = WEST;
         isMovingWest = true;
-        isMoving = true;
     }
     
     // Starts background sound
@@ -739,11 +722,10 @@ function keyDownHandler(event){
     // Toggle hitboxes
     if (event.keyCode == H){
         if(showHitboxes == false){
-            showHitboxes = true; // Shows hitboxes
+            showHitboxes = true;
+        } else {
+            showHitboxes = false;
         }
-        else {
-            showHitboxes = false; // Hides hitboxes
-        }    
     }
 }
 
@@ -766,8 +748,9 @@ function keyUpHandler(event){
 // Pauses the game
 function pauseGame(){
     clearInterval(gameloop);
-    clearInterval(bossAttack1Interval);
+    clearInterval(bossAttackInterval);
     attack1Started = false;
+    gamePaused = true;
     
     // Draws pause screen
     ctx.globalAlpha = 0.5;
@@ -778,7 +761,7 @@ function pauseGame(){
     ctx.font = "bold 100px sans-serif";
     ctx.fillText("GAME PAUSED", ctx.canvas.width / 2, (ctx.canvas.height / 2) - 100);
     
-    ctx.drawImage(boostFiringspeed, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) + 300, ctx.canvas.height - 230, 100, 100);
+    ctx.drawImage(boostFiringspeed, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) + 300, ctx.canvas.height - 230, 100 * scalefX, 100);
     ctx.drawImage(boostDamage, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) + 100, ctx.canvas.height - 230, 100, 100);
     ctx.drawImage(boostSpeed, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) - 100, ctx.canvas.height - 230, 100, 100);
     ctx.drawImage(boostRange, ((ctx.canvas.width / 2) - BOOSTER_WIDTH) - 300, ctx.canvas.height - 230, 100, 100);
@@ -789,8 +772,6 @@ function pauseGame(){
     ctx.fillText("+Damage", (ctx.canvas.width / 2) + 100, ctx.canvas.height - 100);
     ctx.fillText("+Speed", (ctx.canvas.width / 2) - 100, ctx.canvas.height - 100);
     ctx.fillText("+Range", (ctx.canvas.width / 2) - 300, ctx.canvas.height - 100);
-    
-    gamePaused = true;
 }
 
 // Resumes the game
@@ -801,38 +782,38 @@ function resumeGame(){
 
 //Check for collisions - Returns true if the rectangles collides, otherwise false
 function collisionDetection(x1, y1, w1, h1, x2, y2, w2, h2){
-    //x1, y1 = x and y coordinates of rectangle 1
-    //w1, h1 = width and height of rectangle 1
-    //x2, y2 = x and y coordinates of rectangle 2
-    //w2, h2 = width and height of rectangle 2
-    if(showHitboxes){
-        ctx.beginPath();
-        ctx.strokeStyle = "red";
-        ctx.rect(x1,y1,w1,h1);
-        ctx.rect(x2,y2,w2,h2);
-        ctx.stroke();
-    }
-
-    if (x1 <= x2+w2 && x2 <= x1+w1 && y1 <= y2+h2 && y2 <= y1+h1)
-    {
-        return true;
-    }
-    else 
-        return false;
-    }
+  //x1, y1 = x and y coordinates of rectangle 1
+  //w1, h1 = width and height of rectangle 1
+  //x2, y2 = x and y coordinates of rectangle 2
+  //w2, h2 = width and height of rectangle 2
+  if(showHitboxes){
+      ctx.beginPath();
+      ctx.strokeStyle = 'red';
+      ctx.rect(x1,y1,w1,h1);
+      ctx.rect(x2,y2,w2,h2);
+      ctx.stroke();
+  }
+  
+  if (x1 <= x2+w2 && x2 <= x1+w1 && y1 <= y2+h2 && y2 <= y1+h1)
+  {
+	return true;
+  }
+  else 
+    return false;
+}
 
 // Draws hearts
 function drawHearts(){
     for(var i = 1; i <= playerHealth; i++){
         
         if (i < 7){ // First row of hearts
-            heartX = (ctx.canvas.width - HEART_FIRST_POS_X) + (HEART_WIDTH + HEART_DISTANCE_BETWEEN) * i;
-            heartY = HEART_POS_Y;
+            var heartX = (ctx.canvas.width - HEART_FIRST_POS_X * scalefX) + (heartWidth + HEART_DISTANCE_BETWEEN * scalefX) * i;
+            var heartY = HEART_POS_Y;
         } else { // Seconds row of hearts
-            heartX = (ctx.canvas.width - HEART_FIRST_POS_X) + (HEART_WIDTH + HEART_DISTANCE_BETWEEN) * (i-6);
-            heartY = HEART_POS_Y + HEART_WIDTH;
+            heartX = (ctx.canvas.width - HEART_FIRST_POS_X * scalefX) + (heartWidth + HEART_DISTANCE_BETWEEN * scalefX) * (i-6);
+            heartY = HEART_POS_Y + heartHeight;
         }
-        ctx.drawImage(heartImage, heartX, heartY);
+        ctx.drawImage(heartImage, heartX, heartY, heartWidth, heartHeight);
     }
 }
 
@@ -885,16 +866,15 @@ function spawnBooster(j){
 function drawBooster(){
     for(var i = boosterArray.length - 1; i >= 0; i--){
         
-        var differenceX = playerScreenX + (playerWidth / 2) - boosterArray[i].x - (BOOSTER_WIDTH / 2);
-        var differenceY = playerScreenY + (playerHeight / 2) - boosterArray[i].y - (BOOSTER_HEIGHT / 2);
+        var differenceX = playerScreenX + (playerWidth/ 2) - boosterArray[i].x - (BOOSTER_WIDTH * scalefX / 2); // Difference in X
+        var differenceY = playerScreenY + (playerHeight / 2) - boosterArray[i].y - (BOOSTER_HEIGHT * scalefY / 2); // Difference in Y
         
-        if((Math.abs(differenceX) < BOOSTER_MAGNETFORCE_RANGE) && (Math.abs(differenceY) < BOOSTER_MAGNETFORCE_RANGE)){
+        if((Math.abs(differenceX) < BOOSTER_MAGNETFORCE_RANGE * scalefX) && (Math.abs(differenceY) < BOOSTER_MAGNETFORCE_RANGE * scalefY)){ // If in range
            var hypotenuse = Math.pow((Math.pow(differenceX, 2) + Math.pow(differenceY, 2)), 0.5);
-            boosterArray[i].x += boosterArray[i].magnetForce * (differenceX / hypotenuse);
-            boosterArray[i].y += boosterArray[i].magnetForce * (differenceY / hypotenuse);
+            boosterArray[i].x += boosterArray[i].magnetForce * (differenceX / hypotenuse); // Move towards player
+            boosterArray[i].y += boosterArray[i].magnetForce * (differenceY / hypotenuse); // Move towards player
         }
-        
-        ctx.drawImage(boosterArray[i].img, boosterArray[i].x, boosterArray[i].y);
+        ctx.drawImage(boosterArray[i].img, boosterArray[i].x, boosterArray[i].y, BOOSTER_WIDTH * scalefX, BOOSTER_HEIGHT * scalefY);
     }
     boosterCollision();
 }
@@ -903,7 +883,7 @@ function drawBooster(){
 function boosterCollision(){
     
     for(var i = boosterArray.length - 1; i >= 0; i--){
-        if(collisionDetection(boosterArray[i].x, boosterArray[i].y, BOOSTER_WIDTH , BOOSTER_HEIGHT, playerScreenX + HITBOX_PLAYER_X, playerScreenY + HITBOX_PLAYER_Y, playerWidth - HITBOX_PLAYER_WIDTH, playerHeight - HITBOX_PLAYER_HEIGHT)){
+        if(collisionDetection(boosterArray[i].x, boosterArray[i].y, BOOSTER_WIDTH * scalefX, BOOSTER_HEIGHT * scalefY, playerScreenX + HITBOX_PLAYER_X * scalefX, playerScreenY + HITBOX_PLAYER_Y * scalefY, playerWidth- HITBOX_PLAYER_WIDTH * scalefX, playerHeight - HITBOX_PLAYER_HEIGHT * scalefY)){
             if(boosterArray[i].img == boostSpeed){
                 if(playerSpeed < 15){
                     playerSpeed += 0.2;
@@ -924,9 +904,7 @@ function boosterCollision(){
             }
         }
     }
-    
 }
-
 
 // Stops game loop
 function gameover(){
@@ -952,4 +930,13 @@ function setCanvas() {
     ctx.canvas.height = $(window).height();
     scalefX = ctx.canvas.width / 1920;
     scalefY = ctx.canvas.height / 969;
+    
+    playerWidth = CHARACTER_WIDTH * scalefX;
+    playerHeight = CHARACTER_HEIGHT * scalefY;
+    bulletWidth = BULLET_WIDTH * scalefX;
+    bulletHeight = BULLET_HEIGHT * scalefY;
+    enemyMaxSpeed = ENEMY_MAX_SPEED * ((scalefX + scalefY) / 2);
+    enemyMinSpeed = ENEMY_MIN_SPEED * ((scalefX + scalefY) / 2);
+    heartWidth = HEART_WIDTH * scalefX;
+    heartHeight = HEART_WIDTH * scalefY;
 }
