@@ -113,8 +113,7 @@ function init(){
     $(document).keyup(keyUpHandler);
     gameloop = setInterval(loop, TIME_PER_FRAME);
 
-    var bossSpawnPosX = Math.random();
-    if (bossSpawnPosX > 0.5){
+    if (Math.random() > 0.5){
         bossPosX = (-400 + BOSS_WIDTH) * scalefX;
     } else {
         bossPosX = ctx.canvas.width + (400 - BOSS_WIDTH) * scalefX;
@@ -125,12 +124,13 @@ function init(){
 //Game Loop
 function loop(){
     //setCanvas();
-    ctx.font = "bold " + (30 * scalefX) + "px san-serif";
+    ctx.font = "bold " + (30 * scalefX) + "px sans-serif";
     
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     
     ctx.fillStyle = GAME_FONT_COLOR;
     
+    // Draw player stats
     ctx.textAlign = "left";
     ctx.fillText("Damage: " + damage, COUNTER_X, COUNTER_Y);
     ctx.fillText("Firerate: " + Math.round(1/(shootingDelay/1000)*100)/100 + "/s", COUNTER_X, COUNTER_Y + 30);
@@ -145,8 +145,6 @@ function loop(){
     ctx.font = "bold 50px sans-serif";
     ctx.fillText(("level"), ctx.canvas.width/2, ctx.canvas.height/2);
     ctx.font = "bold 120px sans-serif";
-
-    
     ctx.fillText(level, ctx.canvas.width/2, ctx.canvas.height/2 + 110);
         
     // Spawns boss 
@@ -156,7 +154,6 @@ function loop(){
         ctx.fillText("BOSS", (ctx.canvas.width/2), 80);
         // PLays boss sounds
         if(bossSpawnSoundPlayed == false){
-            console.log("should play sound now!");
             bossSpawnSound.play();
             bossBackgroundSound.play();
             bossSpawnSoundPlayed = true;
@@ -188,14 +185,14 @@ function loop(){
     if(playerHealth == 0){
         gameover();
     }
-    
-    console.log(scalefX, scalefY);
+    console.log(bossPosX);
 }
 
 // Player rendering/movement
 function drawCharacter(){
     if (isMovingNorth || isMovingEast || isMovingSouth || isMovingWest) 
     {
+        // Player facing direction
         if (facing == NORTH){           
             playerSpriteY = SPRITE_START_NORTH_Y;
         }
@@ -208,7 +205,7 @@ function drawCharacter(){
         if (facing == WEST){
             playerSpriteY = SPRITE_START_WEST_Y;
         }
-        
+        // Diagonal movement
         if(isMovingNorth && isMovingEast){
             diagonalSpeed = playerSpeed * Math.sin(45);
             playerScreenY -= diagonalSpeed;
@@ -233,6 +230,7 @@ function drawCharacter(){
             playerScreenX -= diagonalSpeed;
             playerSpriteY = SPRITE_START_WEST_Y;
         } else {
+            // Regular movement
             if(isMovingNorth){
                 playerScreenY -= playerSpeed;
                 playerSpriteY = SPRITE_START_NORTH_Y;
@@ -250,15 +248,14 @@ function drawCharacter(){
                 playerSpriteY = SPRITE_START_WEST_Y;
             }
         }
-        
-
+        // Updates Sprite
         playerSpriteX += CHARACTER_WIDTH;
         if (playerSpriteX >= SPRITE_WIDTH) 
         {
             playerSpriteX = SPRITE_START_X;
         }
-        
     }
+    // Faces south when not moving
     else {
         playerSpriteX = CHARACTER_WIDTH;
         playerSpriteY = SPRITE_START_SOUTH_Y;
@@ -273,6 +270,7 @@ function drawCharacter(){
 function drawEnemy(){
 
     for(var i = 0; i < enemyArray.length; i++){
+        // Sets enemy facing
         if (enemyArray[i].facing == NORTH) 
         {
             enemyArray[i].spriteY = SPRITE_START_NORTH_Y;
@@ -361,8 +359,7 @@ function enemyCollision(){
     for(var i = enemyArray.length - 1; i >= 0; i--){
         if(collisionDetection(enemyArray[i].x + playerWidth * 0.3, enemyArray[i].y + HITBOX_PLAYER_Y * scalefY, playerWidth * 0.4, playerHeight - HITBOX_PLAYER_HEIGHT * scalefY, playerScreenX + playerWidth * 0.3, playerScreenY + HITBOX_PLAYER_Y * scalefY, playerWidth * 0.4, playerHeight - HITBOX_PLAYER_HEIGHT * scalefY))
         {
-            //takeDamage();
-            //enemyArray.splice(i,1);
+            takeDamage();
         }
     }
 }
@@ -542,7 +539,6 @@ function bossMovement(){
     if(bossHealth > 0){
         bossSpeed = BOSS_SPEED * (2 - (bossHealth/bossMaxHealth));
     }
-    
 }
 
 // Checks collision with boss
@@ -560,7 +556,6 @@ function bossCollision(){
             if(bossHealth > 0){
                 bossHealth -= damage;
             }
-            
         }
     }
     
@@ -580,11 +575,8 @@ function bossCollision(){
                 var reset = setTimeout(resetBoss, 2000);
                 bossKilled = false;
             }
-            
         }
-        
     }
-    
 }
 
 // Boss attack
@@ -607,7 +599,6 @@ function drawbossAttack(){
     bossAttackCollision();
     
     for(var i = bossBulletArray.length - 1; i >= 0; i--){
-        console.log(bossBulletArray[i].speed);
         bossBulletArray[i].x += bossBulletArray[i].speedX * scalefX;
         bossBulletArray[i].y += bossBulletArray[i].speedY * scalefY;
         
@@ -641,6 +632,12 @@ function resetBoss(){
     bossMaxHealth = Math.floor(bossMaxHealth + bossMaxHealth * 0.5);
     bossHealth = bossMaxHealth;
     attack1Started = false;
+    if (Math.random() > 0.5){
+        bossPosX = (-400 + BOSS_WIDTH) * scalefX;
+    } else {
+        bossPosX = ctx.canvas.width + (400 - BOSS_WIDTH) * scalefX;
+    }
+    // Updates boss stage
     if(currentBossStage < bossStages.length - 1){
         currentBossStage++;
     }
@@ -889,7 +886,6 @@ function boosterCollision(){
                     playerSpeed += 0.2;
                 }
                 boosterArray.splice(i, 1);
-                console.log("more speed!");
             } else if(boosterArray[i].img == boostFiringspeed){
                 if(shootingDelay > 100){
                     shootingDelay -= 20;
