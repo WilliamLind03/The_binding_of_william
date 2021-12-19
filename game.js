@@ -70,9 +70,9 @@ var enemyMaxSpeed = ENEMY_MAX_SPEED * ((scalefX + scalefY) / 2);
 var enemyMinSpeed = ENEMY_MIN_SPEED * ((scalefX + scalefY) / 2);
 var heartWidth = HEART_WIDTH * scalefX;
 var heartHeight = HEART_WIDTH * scalefY;
+var playerSpeed = SCREEN_CHARACTER_SPEED * ((scalefX + scalefY) / 2);
 
 var bossBulletAmount = BOSS_BULLET_AMOUNT;
-var playerSpeed = SCREEN_CHARACTER_SPEED * ((scalefX + scalefY) / 2);
 var shootingDelay = SHOOTING_DELAY;
 var shootingRange = SHOOTING_RANGE;
 var bossMaxHealth = BOSS_HEALTH;
@@ -939,4 +939,5 @@ function setCanvas() {
     enemyMinSpeed = ENEMY_MIN_SPEED * ((scalefX + scalefY) / 2);
     heartWidth = HEART_WIDTH * scalefX;
     heartHeight = HEART_WIDTH * scalefY;
+    playerSpeed = SCREEN_CHARACTER_SPEED * ((scalefX + scalefY) / 2);
 }
