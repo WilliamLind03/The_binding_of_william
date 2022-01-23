@@ -18,7 +18,7 @@ const PATH_BOSS_STAGE_4 = "img/boss_stage_4.png";
 const PATH_BOSS_DEAD = "img/boss_dead.png";
 const PATH_BULLET = "img/bullet.png";
 const PATH_BOSS_BULLET = "img/boss_bullet.png";
-const PATH_HEART = "img/heart_small.png"
+const PATH_HEART = "img/heart.png"
 
 const PATH_BOOST_SPEED = "img/boost_speed.png";
 const PATH_BOOST_FIRINGSPEED = "img/boost_firingspeed.png";
@@ -28,7 +28,7 @@ const PATH_BOOST_DAMAGE = "img/boost_damage.png";
 const BOOSTER_WIDTH = 48;
 const BOOSTER_HEIGHT = 48;
 const BOOSTER_MAGNETFORCE = 10;
-const BOOSTER_MAGNETFORCE_RANGE = 100;
+const BOOSTER_MAGNETFORCE_RANGE = 300;
 
 const HEART_WIDTH = 40;
 const HEART_POS_Y = 10;
